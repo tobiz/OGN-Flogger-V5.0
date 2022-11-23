@@ -40,8 +40,9 @@ import folium
 import gpxpy
 import os
 import subprocess
+from _ast import Try
 
-
+ 
 #
 # Convert QtDesigner ui to python file
 # And import result as a module
@@ -67,6 +68,21 @@ os.system(about_cmd)
 flogger_About = importlib.import_module("floggerAbout")
 
 #
+# Convert QtDesigner No Flights window 
+# to module and import
+#
+no_flights_in = path_join_dd(os.path.abspath(__file__), ["data", "flogger_no_flights.ui"])
+no_flights_out = path_join(path, ["floggerNoFlights.py"])
+no_flights_cmd = "pyuic5 %s -o %s" % (no_flights_in, no_flights_out)
+print("pyuic5 cmd-3: " + no_flights_cmd)
+os.system(no_flights_cmd)
+try:
+    flogger_No_Flights = importlib.import_module("floggerNoFlights")
+    print("floggerNoFlights module imported")
+except:
+    print("floggerNoFlights module import - FAILED")
+
+#
 # Create Python resources file
 #
 pyrcc5_out = path_join(path, ["flogger_resources_rc.py"])
@@ -74,24 +90,28 @@ pyrcc5_in = path_join_dd(os.path.abspath(__file__), ["data", "flogger_resources.
 ##print("pyrcc5_in: ", pyrcc5_in)
 ##print("pyrcc5_out: ", pyrcc5_out)
 pyrcc5_cmd = "pyrcc5 -o %s %s" % (pyrcc5_out, pyrcc5_in)
-print ("pyrcc5_cmd-3 is: " + pyrcc5_cmd)
+print ("pyrcc5_cmd-4 is: " + pyrcc5_cmd)
 ##os.system(pyrcc5_cmd)
 print("pyrcc5 ran ok ", pyrcc5_cmd)
 print("flogger Exit")
 ##exit()
 
 class flogger(QtWidgets.QMainWindow):
-    def __init__(self, about_popup):
+##    def __init__(self, about_popup):
+    def __init__(self, about_popup, noflights_popup):
+##    def __init__(self, about_popup, no_flights_popup):
         print("flogger init")
         super().__init__()
         self.ui = flogger_ui.Ui_MainWindow()
         self.ui.setupUi(self)
         self.about = about_popup
+        print("noflights_popup is type", type(noflights_popup))
+        self.nfw = noflights_popup
         window = QtWidgets.QMainWindow()  
         
         self.ui.actionAbout.triggered.connect(self.about.floggerAboutButton)
-        self.ui.actionStart.triggered.connect(self.floggerStart)
-##        self.ui.actionStart.triggered.connect(self.floggerStart)  
+        
+        self.ui.actionStart.triggered.connect(self.floggerStart) 
         self.ui.actionStop.triggered.connect(self.floggerStop)
         self.ui.actionFlying_End.triggered.connect(self.floggerFlying_End)  
         self.ui.actionQuit.triggered.connect(self.floggerQuit)  
@@ -116,6 +136,8 @@ class flogger(QtWidgets.QMainWindow):
         self.ui.FlightLogTable.verticalHeader().sectionClicked.connect(self.floggerFlightLogDoubleClicked)  
         self.ui.FlightLogTable.setColumnHidden(10, True)
         # Initialise values from config file
+##        print("self.nfw type is: ", type(self.nfw))
+##        self.nfw.NoFlightsButtonOk.clicked.connect(self.floggerNoFlightsButtonOk)
 
         filepath = os.path.join(path, "flogger_settings_file.txt")
         try:
@@ -491,6 +513,9 @@ class flogger(QtWidgets.QMainWindow):
         flogger.set_sunset.connect(self.set_sunset)
         flogger.flogger_run(settings, flogger)
         
+        flogger.no_flights_show.connect(self.NoFlightsWindowShow) 
+        flogger.no_flights_ok.connect(self.NoFlightsButtonOk)
+        
     def change_status(self, state, colour):
         # Slot for status change signalled from data collection thread
         print("\nGUI change called with: ", " State: ", state, " Colour: ", colour, "\n")
@@ -562,8 +587,20 @@ class flogger(QtWidgets.QMainWindow):
         self.RunningLabel.setStyleSheet("color: " + colour)
         self.RunningLabel.setText(stateTxt)
         self.RunningProgressBar.setProperty("maximum", 1)
+                   
+    def NoFlightsWindowShow(self):
+        global NFW 
+        print("\nNoFlightsWindowShow Called\n")
+        self.NFwindow = NoFlightsWindow()
+        NFW = self.NFwindow
+        self.NFwindow.show()
         
-
+    def NoFlightsButtonOk(self):
+        global NFW
+        print("No Flights Ok button clicked") 
+##        NFW.hide()
+        NFW.close()
+     
 #
 # Action Config Menu Bar
 #
@@ -1583,6 +1620,14 @@ class flogger(QtWidgets.QMainWindow):
         print("Help menu clicked")
         window = HelpWindow(self)
         window.show()
+        
+    def No_Flights_show(self):
+        print("No Flights show called")
+##        window = NoFlightsWindow(self, "astring")
+        window = NoFlightsWindow()
+        print("No Flights Window created")
+        window.show()
+        
           
 #    def EditButton(self):
 #        print "Edit menu clicked"
@@ -2708,13 +2753,21 @@ class AboutWindow(QDialog):
         print("AboutWindow Initialise")
         super().__init__()
         self.ui = flogger_About.Ui_Form()
+        print("About self.ui: ", self.ui)
         self.ui.setupUi(self)
     
     def floggerAboutButton(self):
         print("About Ok button clicked")
         self.show()
-
-     
+        
+class NoFlightsWindow(QDialog):
+    def __init__(self):
+        print("No Flights Window Initialise")
+        super().__init__()
+        self.nfw = flogger_No_Flights.Ui_Form2()
+        self.nfw.setupUi(self)
+        self.nfw.NoFlightsOkButton.clicked.connect(flogger.NoFlightsButtonOk)
+                
         
 
 class flogger_splash(QtWidgets.QMainWindow):
@@ -2742,6 +2795,8 @@ def mainX():
     Ui_MainWindow, base_class = uic.loadUi(path_join_dd(os.path.abspath(__file__), ["data", "flogger-v1.2.3.ui"]))
 
     Ui_AboutWindow, base_class = uic.loadUi(path_join_dd(os.path.abspath(__file__), ["data", "flogger_about.ui"]))
+    
+    Ui_NoFlightsWindow, base_class = uic.loadUi(path_join_dd(os.path.abspath(__file__), ["data", "flogger_no_flights.ui"]))
 
 ##    path = os.path.dirname(os.path.abspath(__file__))
 ##    icon_path = path_join_dd(os.path.abspath(__file__), ["data", "flogger_icon-08.png"])
@@ -3252,8 +3307,18 @@ if __name__ == "__main__":
     splash = flogger_splash()
     splash.show
     about = AboutWindow()
-    window = flogger(about)
-    window.show()
+    noflights = NoFlightsWindow()
+##    no_flights = NoFlightsWindow()
+    window1 = flogger(about, noflights)
+##    window1 = flogger(about, no_flights)
+    window1.show()
+    print("About window init")
+    
+##    no_flights = NoFlightsWindow()
+##    window2 = flogger(no_flights)
+##    window2.show()
+##    print("No Flights winidow init")
+    
     sys.exit(app.exec())
     ##sys.exit(app.run(use_reloader=False))
     

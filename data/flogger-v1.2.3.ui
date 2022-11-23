@@ -3088,7 +3088,7 @@ be supplied</string>
   </action>
   <action name="actionHelp_2">
    <property name="icon">
-    <iconset resource="flogger_resources.qrc">
+    <iconset>
      <normaloff>:/newPrefix/flogger_help_icon-1.png</normaloff>:/newPrefix/flogger_help_icon-1.png</iconset>
    </property>
    <property name="text">
@@ -3097,7 +3097,7 @@ be supplied</string>
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset resource="flogger_resources.qrc">
+    <iconset>
      <normaloff>:/newPrefix/flogger_icon-08.png</normaloff>:/newPrefix/flogger_icon-08.png</iconset>
    </property>
    <property name="text">
@@ -3121,7 +3121,7 @@ be supplied</string>
   </action>
   <action name="actionStart">
    <property name="icon">
-    <iconset resource="flogger_resources.qrc">
+    <iconset>
      <normaloff>:/newPrefix/flogger_start.png</normaloff>:/newPrefix/flogger_start.png</iconset>
    </property>
    <property name="text">
@@ -3130,7 +3130,7 @@ be supplied</string>
   </action>
   <action name="actionStop">
    <property name="icon">
-    <iconset resource="flogger_resources.qrc">
+    <iconset>
      <normaloff>:/newPrefix/flogger_stop.png</normaloff>:/newPrefix/flogger_stop.png</iconset>
    </property>
    <property name="text">

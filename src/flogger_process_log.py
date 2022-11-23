@@ -16,6 +16,8 @@
 
 ##from . import flogger_settings
 import flogger_settings
+
+
 import string
 import datetime
 import time
@@ -163,6 +165,12 @@ def process_log (cursor, db, settings):
         print("No records in flight_log so set date to today")
         today = datetime.date.today().strftime("%y/%m/%d")
         max_date = datetime.datetime.strptime(today, "%y/%m/%d")
+        
+##        from flogger_gui import NoFlightsWindow
+##        window = NoFlightsWindow()
+        
+##        print("No Flights Window shown")
+##        window.show()
         
     print("max_date set to today: ", max_date)
       

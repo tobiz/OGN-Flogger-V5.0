@@ -187,6 +187,8 @@ class flogger3(QtCore.QThread):
     change_status = pyqtSignal(str, str)
     set_flight_count = pyqtSignal(int, str, str) 
     set_sunset = pyqtSignal(str)        # Signal changes of status to GUI
+    no_flights_show = pyqtSignal()
+    no_flights_ok = pyqtSignal()   # Setup signal to display No Flights Today Window Ok button
     
     def __init__(self, interval=1, parent=None):
         print("init flogger3")
@@ -375,27 +377,32 @@ class flogger3(QtCore.QThread):
                 fleet_name = settings.FLOGGER_AIRFIELD_NAME
                 cursor.execute('''SELECT ROWID FROM flarm_db WHERE registration =? OR flarm_id =? AND airport=?''', (callsign,callsign[3:],settings.FLOGGER_AIRFIELD_NAME,))
             #cursor.execute('''SELECT ROWID FROM flarm_db WHERE registration =? OR flarm_id =? AND airport=?''', (callsign,callsign[3:],settings.FLOGGER_AIRFIELD_NAME,))
-            row1 = cursor.fetchone()
+##            row1 = cursor.fetchone()
+            row1 = cursor.fetchall()
+            print("flamdb for: ", callsign, " Rtns: ", row1)
             if row1 == None:
                 print("Registration not found in flarm_db: ", callsign_trans(callsign), " for take off airfield: ", fleet_name)
                 return False
             else:
-                print("Aircraft: ", callsign, " found in flarm db at: ", row1[0], " for: ", fleet_name)
-                reg = callsign_trans(callsign)
-        #        if settings.FLOGGER_FLEET_CHECK <> "N":
-                print("settings.FLOGGER_FLEET_CHECK is: ", settings.FLOGGER_FLEET_CHECK)
-#                if not test_YorN(settings.FLOGGER_FLEET_CHECK):
-                if test_YorN(settings.FLOGGER_FLEET_CHECK):
-        #            if settings.FLOGGER_FLEET_LIST[reg] > 100 and settings.FLOGGER_FLEET_LIST[reg] < 200 and settings.FLOGGER_LOG_TUGS == "N":
-                    if settings.FLOGGER_FLEET_LIST[reg] > 100 and settings.FLOGGER_FLEET_LIST[reg] < 200 and (not test_YorN(settings.FLOGGER_LOG_TUGS)):
-                        print("Don't log tug: %s" % reg)
-                        return False
+                for row in row1:     
+##                    print("Aircraft: ", callsign, " found in flarm db at: ", row1[0], " for: ", fleet_name)     
+                    print("Aircraft: ", callsign, " found in flarm db at: ", row[0], " for: ", fleet_name)
+                    reg = callsign_trans(callsign)
+            #        if settings.FLOGGER_FLEET_CHECK <> "N":
+                    print("settings.FLOGGER_FLEET_CHECK is: ", settings.FLOGGER_FLEET_CHECK)
+    #                if not test_YorN(settings.FLOGGER_FLEET_CHECK):
+                    if test_YorN(settings.FLOGGER_FLEET_CHECK):
+            #            if settings.FLOGGER_FLEET_LIST[reg] > 100 and settings.FLOGGER_FLEET_LIST[reg] < 200 and settings.FLOGGER_LOG_TUGS == "N":
+                        if settings.FLOGGER_FLEET_LIST[reg] > 100 and settings.FLOGGER_FLEET_LIST[reg] < 200 and (not test_YorN(settings.FLOGGER_LOG_TUGS)):
+                            print("Don't log tug: %s" % reg)
+                            return False
+                        else:
+                            print("Tug flight for: ", reg)
                     else:
-                        print("Tug flight for: ", reg)
-                else:
-                    print("Aircraft: ", callsign_trans(callsign), "Is in FlarmDB, but Fleet Check is: ", settings.FLOGGER_FLEET_CHECK)
-                    return True
-            # At least 1 match for the callsign has been found
+                        print("Aircraft: ", callsign_trans(callsign), "Is in FlarmDB, but Fleet Check is: ", settings.FLOGGER_FLEET_CHECK)
+##                        return True
+                return True
+                # At least 1 match for the callsign has been found but sometimes finds more than 1! People make duplicates!!
             return True
         
             
@@ -552,6 +559,7 @@ class flogger3(QtCore.QThread):
                     cursor.execute('''INSERT INTO track(flight_no,track_no,latitude,longitude,altitude,course,speed,timeStamp) 
                         VALUES(:flight_no,:track_no,:latitude,:longitude,:altitude,:course,:speed,:timeStamp)''',                                           
                         {'flight_no':flight_no,'track_no':track_no,'latitude':latitude,'longitude':longitude,'altitude':altitude,'course':course,'speed':speed,'timeStamp':timeStamp})
+                    print("Add trackpoint ok. Flight No: ", flight_no, " trackpoint nos: ", track_no)
                 except:
                     print("Add trackpoint failed on insert: ignore trackpoint", track, " Flight_no: ", flight_no)
             else:
@@ -1181,7 +1189,17 @@ class flogger3(QtCore.QThread):
 ##                    self.change_status.emit("Processing", "blue")
 ##                    self.change_status.emit("blue")
                     print("Change status: (Processing, blue)")
-                    process_log(cursor,db, settings)
+                    
+##                    cursor.execute('''SELECT max(sdate) FROM flight_log2''')
+##                    row = cursor.fetchone()
+##                    if row != (None,):
+                    if int(flight_count) > 0:
+                        print("Show Flights") 
+                        process_log(cursor,db, settings)
+                    else:
+##                        print("Show No Flights Window ", " row is: ", row)
+                        print("Show No Flights Window ")
+                        self.no_flights_show.emit()
                     self.change_status.emit("Processing End", "blue")
                     print("Change status: (Processing End, blue)")
                     

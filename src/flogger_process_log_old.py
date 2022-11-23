@@ -101,6 +101,10 @@ def process_log (cursor, db, settings):
         print("Last record date in flight_log is: ", max_date)
     else:
         print("No records in flight_log so set date to today")
+##        Display No Flights Window
+        window = NoFlightsWindow()
+        print("No Flights Window shown")
+        window.show()
         today = datetime.date.today().strftime("%y/%m/%d")
         max_date = datetime.datetime.strptime(today, "%y/%m/%d")
         

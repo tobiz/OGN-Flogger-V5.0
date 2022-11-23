@@ -81,7 +81,7 @@ FLOGGER_TRACKS_FOLDER = ""# Folder for .gpx files for flight tracks
 FLOGGER_V_SMALL = 10.0# Lowest moving speed to be considered as zero kph
 FLOGGER_NAME = OGN_Flogger# Name to be displayed on APRS
 #FLOGGER_VER = 0.3.1# Flogger version number
-FLOGGER_VER = 2.2# Flogger version number
+FLOGGER_VER = 5.0# Flogger version number
 FLOGGER_RAD = 100# APRS radius in km from base station in AIRFIELD_DETAILS
 FLOGGER_FLIGHTS_LOG = flight_logs# Folder for csv file of daily flights record  
 FLOGGER_DATA_RETENTION = 3# Number of days to keep .csv files, ie delete, if "0" keep all files
@@ -120,7 +120,7 @@ FLOGGER_APRS_BASES = SuttonB, UKPOC, UKRUF, Thirsk, PWKirkbym, PWMalham
 # Flogger process control. Continue process loop if True, else terminate thread
 #
 FLOGGER_RUN = TRUE
-FLOGGER_INCLUDE_TUG_FLIGHTS = Y# If Yes display tug flights as separate lines in gui flight log
+FLOGGER_INCLUDE_TUG_FLIGHTS = N# If Yes display tug flights as separate lines in gui flight log
 
 
 
